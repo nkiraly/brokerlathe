@@ -1,0 +1,7 @@
+---
+# BrokerLathe Common Configuration and Values
+
+# In a scenario where you are deploying to a system where python is found somewhere else
+# Default FreeBSD python location /usr/local/bin/python
+# Default Linux python location   /usr/bin/python
+ansible_python_interpreter: /usr/local/bin/python
