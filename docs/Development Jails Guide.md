@@ -91,8 +91,10 @@ ezjail_jailzfs="bludgeon-storage/jails"
 
 ## Install basejail
 
+Include ports and source tree
+
 ```bash
-[root@bludgeon ~]# ezjail-admin install
+[root@bludgeon ~]# ezjail-admin install -ps
 
 .....
 
@@ -119,10 +121,16 @@ bludgeon-storage/jails/basejail            39G    139M     39G     0%    /opt/ja
 bludgeon-storage/jails/newjail             39G    815K     39G     0%    /opt/jails/newjail
 ```
 
+If you need to update your basejail, use freebsd-update within the jail with
+
+```bash
+$ ezjail-admin update -u
+```
+
 
 # Creating a dev jail
 
-## Create a dev jail with ezjail-admin
+## Create the jail with ezjail-admin
 
 Create jail in 172.16.54.0/24 space - host only virtual adapter em1.
 
@@ -138,7 +146,9 @@ export jail_bludgeon_dev00_ip="172.16.54.80"
 export jail_bludgeon_dev00_interface="em1"
 ```
 
-## Configure dev jail rc.conf
+## Configure jail rc.conf
+
+Turn off things we know we don't need
 
 ```bash
 $ vi /opt/jails/bludgeon-dev00/etc/rc.conf
@@ -167,4 +177,20 @@ $ /usr/local/etc/rc.d/ezjail start bludgeon-dev00
  
 $ sudo -H jailme 1 date
 ```
+
+
+# Jail Ports Management
+
+## Copy port distfiles for jail port install
+
+We let ezjail-admin update update the basejail ports tree, but for space / sanity sake,
+cross-mount your jail host port distfiles to basejail for use in your jail builds
+
+```bash
+$ mkdir /opt/jails/basejail/usr/ports/distfiles
+$ vi /etc/fstab
+/usr/ports/distfiles  /opt/jails/basejail/usr/ports/distfiles   nullfs rw 0 0
+```
+
+## Install some ports
 
