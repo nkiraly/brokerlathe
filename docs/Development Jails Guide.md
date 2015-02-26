@@ -12,6 +12,21 @@ $ cd /usr/ports/sysutils/jailme/ && make install clean
 $ portupgrade -a -f
 ```
 
+# Enable ezjail
+
+```bash
+$ vi /etc/rc.conf
+ezjail_enable="YES"
+```
+
+# Configure Host-only network
+Host only virtual adapter em1 172.16.54.100 Host is configured as 172.16.54.3
+
+```bash
+$ vi /etc/rc.conf
+ifconfig_em1="inet 172.16.54.100 netmask 255.255.255.0"
+```
+
 
 # Configure a ZFS RAID-Z zpool of filesystems for each node's db storage
 
@@ -109,15 +124,17 @@ bludgeon-storage/jails/newjail             39G    815K     39G     0%    /opt/ja
 
 ## Create a dev jail with ezjail-admin
 
+Create jail in 172.16.54.0/24 space - host only virtual adapter em1.
+
 ```bash
-$ ezjail-admin create  bludgeon-dev00  10.50.2.91
+$ ezjail-admin create  bludgeon-dev00  172.16.54.80
 
 Configure jail IPs and talk on host main interface
 
 ```bash
 $ vi /usr/local/etc/ezjail/bludgeon_dev00
  
-export jail_bludgeon_dev00_ip="10.50.2.91"
+export jail_bludgeon_dev00_ip="172.16.54.80"
 export jail_bludgeon_dev00_interface="em1"
 ```
 
@@ -146,7 +163,7 @@ This tests that you can start and execute binaries in the jail, while also confi
 ```bash
 $ cp /usr/share/zoneinfo/America/New_York /opt/jails/bludgeon-dev00/etc/localtime
  
-$ sudo /usr/local/etc/rc.d/ezjail start bludgeon-dev00
+$ /usr/local/etc/rc.d/ezjail start bludgeon-dev00
  
 $ sudo -H jailme 1 date
 ```
