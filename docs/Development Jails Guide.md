@@ -183,14 +183,41 @@ $ sudo -H jailme 1 date
 
 ## Copy port distfiles for jail port install
 
-We let ezjail-admin update update the basejail ports tree, but for space / sanity sake,
-cross-mount your jail host port distfiles to basejail for use in your jail builds
+We let ezjail-admin update update the basejail ports tree and manage the non-standard /etc/make.conf
+But for one-place updates, cross-mount your jail host port/distfiles and ports/packages to your jail
 
 ```bash
 $ mkdir /opt/jails/basejail/usr/ports/distfiles
 $ vi /etc/fstab
-/usr/ports/distfiles  /opt/jails/basejail/usr/ports/distfiles   nullfs rw 0 0
+/usr/ports/distfiles  /opt/jails/bludgeon-dev00/var/ports/distfiles  nullfs ro 0 0
+/usr/ports/packages   /opt/jails/bludgeon-dev00/var/ports/packages   nullfs ro 0 0
+```
+
+Notice: This is dependent on your basejail ports tree and host ports tree being the same.
+
+
+## Fetching port files without external networking
+
+If you need a dependency, you can make fetch it on the jail host
+
+```bash
+[root@bludgeon /usr/ports/ports-mgmt/pkg]# make fetch-recursive
+===> Fetching all distfiles for pkg-1.4.12 and dependencies
+===>  License BSD2CLAUSE accepted by the user
+=> pkg-1.4.12.tar.xz doesn't seem to exist in /usr/ports/distfiles/.
+=> Attempting to fetch http://files.etoilebsd.net/pkg/pkg-1.4.12.tar.xz
+pkg-1.4.12.tar.xz                             100% of 1749 kB  981 kBps 00m02s
+===> Fetching all distfiles required by pkg-1.4.12 for building
 ```
 
 ## Install some ports
+
+Now you have your dependencies, you can build ports in your jail.
+
+You can use make-config to do all your config options up front so you can just let the build chain run.
+
+```bash
+[root@bludgeon /usr/ports/shells/bash]# make config-recursive
+===> Setting user-specified options for bash-4.3.33 and dependencies
+```
 
