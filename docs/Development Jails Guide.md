@@ -28,7 +28,7 @@ ifconfig_em1="inet 172.16.54.100 netmask 255.255.255.0"
 ```
 
 
-# Configure a ZFS RAID-Z zpool of filesystems for each node's db storage
+# Configure a ZFS RAID-Z zpool for all jail storage
 
 ## Enable ZFS in rc.conf
 
