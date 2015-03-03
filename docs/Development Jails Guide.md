@@ -221,3 +221,7 @@ You can use make-config to do all your config options up front so you can just l
 ===> Setting user-specified options for bash-4.3.33 and dependencies
 ```
 
+
+# References
+https://erdgeist.org/arts/software/ezjail/
+https://www.freebsd.org/doc/en/books/handbook/ports-using.html
