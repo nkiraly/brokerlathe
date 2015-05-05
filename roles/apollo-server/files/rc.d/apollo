@@ -1,0 +1,32 @@
+#!/bin/sh
+#
+# PROVIDE: apollo
+# REQUIRE: NETWORKING SERVERS
+# BEFORE: DAEMON
+# KEYWORD: shutdown
+
+#
+# Add the following lines to /etc/rc.conf to enable apollo:
+#
+# apollo_enable="YES"
+#
+
+# based on
+# https://www.freebsd.org/doc/en_US.ISO8859-1/articles/rc-scripting/article.html
+# http://activemq.apache.org/apollo/documentation/user-manual.html#Managing_a_Background_Broker_Instance
+# /usr/ports/net/activemq 
+
+. /etc/rc.subr
+
+name=apollo
+rcvar=${name}_enable
+
+command="/var/db/apollo/brokers/default/bin/apollo-broker-service"
+command_args="$1"
+
+procname="/usr/local/openjdk7/bin/java"
+required_files="/var/db/apollo/brokers/default/etc/apollo.xml"
+pidfile="/var/db/apollo/brokers/default/data/apollo.pid"
+
+load_rc_config $name
+run_rc_command "$1"

@@ -1,0 +1,22 @@
+---
+
+# the name of the tarball to use
+apollo_tarball_name: apache-apollo-1.7-unix-distro.tar.gz
+
+# where will the tarball be extracted to
+apollo_install_dir: /opt
+
+# this is what's in the extracted tarball
+apollo_extracted_foldername: apache-apollo-1.7
+
+# the apollo binary used for broker configuration - probably don't want to change this
+apollo_bin: '{{apollo_install_dir}}/{{apollo_extracted_foldername}}/bin/apollo'
+
+# where to put runtime data
+apollo_runtime_dir: /var/db/apollo
+
+# where brokers live
+apollo_brokers_dir: '{{apollo_runtime_dir}}/brokers'
+
+# resulting broker directory - don't change this
+apollo_broker_dir: '{{apollo_brokers_dir}}/{{brokerlathe_apollo_broker_name}}'

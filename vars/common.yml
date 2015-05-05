@@ -1,5 +1,5 @@
 ---
-# BrokerLathe Common Configuration and Values
+# BrokerLathe Common Configuration
 
 # In a scenario where you are deploying to a system where python is found somewhere else
 # Default FreeBSD python location /usr/local/bin/python

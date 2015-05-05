@@ -1,0 +1,5 @@
+---
+
+- name: restart apollo
+  service: name=apollo state=restarted
+  when: not apollo_service_started.changed

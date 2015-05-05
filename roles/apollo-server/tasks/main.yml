@@ -1,0 +1,139 @@
+---
+# BrokerLathe Apollo Server Role
+#
+
+# Before using this role, need to provision the environment.
+# TODO: migrate this to provision_broker.yml playbook?
+# freebsd package dependencies when running as a stand alone server
+#   shells/bash
+#   java/openjdk7
+#   security/sudo
+#   lang/python
+#    
+#
+# when installing these packages in a jail, use -j a la
+# sudo pkg -j 1 install java/openjdk7
+
+# References
+# http://activemq.2283324.n4.nabble.com/Apollo-high-availability-td4670653.html
+# http://svn.apache.org/repos/asf/activemq/tags/activemq-5.7.0/activemq-leveldb/readme.md
+# https://wiki.apache.org/hadoop/MountableHDFS
+# http://activemq.apache.org/apollo/documentation/stomp-manual.html#Topic_Durable_Subscriptions
+
+
+- name: extract to install dir
+  # if you get an error here, download the tar from http://activemq.apache.org/apollo/download.html
+  # and place it in assets/ directory
+  unarchive: src=assets/{{apollo_tarball_name}}
+             dest={{apollo_install_dir}}
+             creates={{apollo_install_dir}}/{{apollo_extracted_foldername}}
+
+- name: create apollo runtime dir
+  command: mkdir {{apollo_runtime_dir}}
+  args:
+    creates: '{{apollo_runtime_dir}}'
+
+- name: create apollo brokers dir
+  command: mkdir {{apollo_brokers_dir}}
+  args:
+    creates: '{{apollo_brokers_dir}}'
+
+- name: create broker
+  command: '{{apollo_bin}} create --host {{brokerlathe_apollo_virtual_host}} {{brokerlathe_apollo_broker_name}}'
+  args:
+    chdir: '{{apollo_brokers_dir}}'
+    creates: '{{apollo_broker_dir}}'
+
+- name: install apollo service rc.d wrapper that hooks into freebsd rc subsystem
+# For more information on this service script,
+# see: http://activemq.apache.org/apollo/documentation/user-manual.html#Managing_a_Background_Broker_Instance
+  copy: src="rc.d/apollo"
+        dest="/usr/local/etc/rc.d/apollo"
+        owner="root"
+        group="wheel"
+        mode="0555"
+
+- name: update apollo service rc.d wrapper to look for broker service command script in apollo_broker_dir
+  lineinfile: dest="/usr/local/etc/rc.d/apollo"
+              regexp=^command=
+              line='command="{{apollo_broker_dir}}/bin/apollo-broker-service"'
+              state=present
+              
+- name: update apollo service rc.d wrapper to look for broker service require_files in apollo_broker_dir
+  lineinfile: dest="/usr/local/etc/rc.d/apollo"
+              regexp=^required_files=
+              line='required_files="{{apollo_broker_dir}}/etc/apollo.xml"'
+              state=present
+              
+- name: update apollo service rc.d wrapper to look for broker service pidfile in apollo_broker_dir
+  lineinfile: dest="/usr/local/etc/rc.d/apollo"
+              regexp=^pidfile=
+              line='pidfile="{{apollo_broker_dir}}/data/apollo.pid"'
+              state=present
+
+- name: enable apollo in rc.conf
+  lineinfile: dest=/etc/rc.conf
+              regexp=^apollo_enable=
+              line='apollo_enable="YES"'
+              state=present
+
+- name: ensure admin user is present
+  lineinfile: dest={{apollo_broker_dir}}/etc/users.properties
+              regexp=^{{apollo_admin_user.name}}=
+              line={{apollo_admin_user.name}}={{apollo_admin_user.pass}}
+              state=present
+  notify:
+    - restart apollo
+
+- name: ensure admins group is present
+  lineinfile: dest={{apollo_broker_dir}}/etc/groups.properties
+              regexp=^admins=
+              line=admins={{apollo_admins_group|join('|')}}
+              state=present
+  notify:
+    - restart apollo
+
+- name: create/remove non-admin users
+  lineinfile: dest={{apollo_broker_dir}}/etc/users.properties
+              regexp=^{{item.name}}=
+              line={{item.name}}={{item.pass}}
+              state={{item.state|default('present')}}
+  with_items: apollo_users
+  notify:
+    - restart apollo
+
+- name: ensure users group is present
+  lineinfile: dest={{apollo_broker_dir}}/etc/groups.properties
+              regexp=^users=
+              line=users={{apollo_users|map(attribute='name')|join('|')}}
+              state=present
+
+- name: create/remove custom groups
+  lineinfile: dest={{apollo_broker_dir}}/etc/groups.properties
+              regexp=^{{item.name}}=
+              line={{item.name}}={{item.users|join('|')}}
+              state={{item.state|default('present')}}
+  with_items: apollo_groups
+  notify:
+    - restart apollo
+
+- name: install config file
+  template: src=apollo.xml.j2
+            dest={{apollo_broker_dir}}/etc/apollo.xml
+            owner=root
+            group=wheel
+            mode=0644
+  notify:
+    - restart apollo
+
+- name: start apollo daemon script
+# TODO: improve this - use rc.d/apollo command to start it instead of service
+#       because when service runs it, it errors with
+#[root@local-apollo ~]# service apollo start
+#Starting apollo.
+#Starting apollo-broker-service
+#Could not start apollo-broker-service
+#/usr/local/etc/rc.d/apollo: WARNING: failed to start apollo
+#
+  command: /usr/local/etc/rc.d/apollo start
+  register: apollo_service_started

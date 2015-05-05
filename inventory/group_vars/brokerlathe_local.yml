@@ -1,0 +1,32 @@
+---
+# local designation group variables
+
+brokerlathe_apollo_service_host: apollo-local.local
+
+brokerlathe_apollo_broker_name: brokerlathe-local
+
+brokerlathe_apollo_virtual_host: brokerlathe-local
+
+# apollo default admin user
+apollo_admin_user:
+  name: brokerlatheadmindev
+  pass: password7
+
+# what users are in the admin group
+apollo_admins_group: [ brokerlatheadmindev, nkiraly ]
+
+# initial users besides apollo default admin user
+#   - name: username
+#     pass: password
+#     state: present|absent
+# apollo_users: []
+apollo_users:
+  - name: nkiraly
+    pass: password1
+    state: present
+
+# initial groups besides admins
+#   - name: groupname
+#     users: [ user1, user2, ... ]
+#     state: present|absent
+apollo_groups: []

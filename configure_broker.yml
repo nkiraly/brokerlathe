@@ -1,0 +1,13 @@
+---
+
+- name: Configure Apollo Message Broker
+  hosts: brokerlathe_{{designation | mandatory }}_apollo
+  gather_facts: false
+  sudo: true
+  
+  vars_files:
+    - vars/common.yml
+  
+  roles:
+    - role: apollo-server
+    # apollo_users and etc defined in inventory group_vars for designation
